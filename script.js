@@ -847,17 +847,32 @@ async function convertPdfToImages() {
         // 生成文件名（不含扩展名）
         const baseFileName = currentPdf.name.replace(/\.[^/.]+$/, '');
         
+        // 计算页码数字的长度，用于动态补零
+        const pageNumLength = numPages.toString().length;
+        
+        // 生成文件名的辅助函数
+        const getFileName = (index) => {
+            const pageNum = index + 1;
+            // 只有1页时，直接使用原文件名，不添加页码
+            if (numPages === 1) {
+                return `${baseFileName}.${imageFormat}`;
+            }
+            // numPages为2时不补零，否则根据总页数的数字长度补零
+            const paddedPageNum = numPages <= 2 ? pageNum.toString() : pageNum.toString().padStart(pageNumLength, '0');
+            return `${baseFileName}-${paddedPageNum}.${imageFormat}`;
+        };
+        
         if (numPages <= 2) {
             // 直接下载
             for (let i = 0; i < images.length; i++) {
-                const fileName = `${baseFileName}-${(i + 1).toString().padStart(3, '0')}.${imageFormat}`;
+                const fileName = getFileName(i);
                 saveAs(images[i], fileName);
             }
         } else {
             // 打包成ZIP下载
             const zip = new JSZip();
             for (let i = 0; i < images.length; i++) {
-                const fileName = `${baseFileName}-${(i + 1).toString().padStart(3, '0')}.${imageFormat}`;
+                const fileName = getFileName(i);
                 zip.file(fileName, images[i]);
             }
             
