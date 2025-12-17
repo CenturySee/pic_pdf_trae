@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF转图片</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h1>转换工具</h1>
+            <nav>
+                <a href="../pic2pdf/" class="nav-btn">图片转PDF</a>
+                <button class="nav-btn active" data-tab="pdf-to-image">PDF转图片</button>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <!-- PDF转图片 -->
+            <section id="pdf-to-image" class="tab-content active">
+                <div class="section-header">
+                    <h2>PDF转图片</h2>
+                </div>
+                <div class="progress-container" id="pdfProgressContainer" style="display: none;">
+                    <div class="progress-bar" id="pdfProgressBar">
+                        <div class="progress-fill" id="pdfProgressFill"></div>
+                        <div class="progress-text" id="pdfProgressText"></div>
+                    </div>
+                </div>
+                <div class="upload-section">
+                    <div class="upload-area" id="pdfUploadArea">
+                        <input type="file" id="pdfInput" accept=".pdf" style="display: none;">
+                        <button id="pdfUploadBtn" class="primary-btn">上传PDF</button>
+                        <p>或拖拽PDF到此处</p>
+                    </div>
+                </div>
+                
+                <div class="controls-section">
+                    <div class="controls-group">
+                        <div class="control-item">
+                            <label>清晰度(DPI):</label>
+                            <select id="dpi">
+                                <option value="96">96</option>
+                                <option value="150">150</option>
+                                <option value="300" selected>300</option>
+                                <option value="600">600</option>
+                            </select>
+                        </div>
+                        <div class="control-item">
+                            <label>图片格式:</label>
+                            <select id="imageFormat">
+                                <option value="png" selected>PNG</option>
+                                <option value="jpeg">JPG</option>
+                                <option value="webp">WebP</option>
+                            </select>
+                        </div>
+                        <button id="convertPdf" class="primary-btn">转换为图片</button>
+                    </div>
+                </div>
+                
+                <div class="preview-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3>PDF预览</h3>
+                        <button id="pausePreview" class="secondary-btn" disabled style="font-size: 0.875rem; padding: 0.5rem 1rem;">暂停预览</button>
+                    </div>
+                    <div class="progress-container" id="pdfLoadProgressContainer" style="display: none;">
+                        <div class="progress-bar" id="pdfLoadProgressBar">
+                            <div class="progress-fill" id="pdfLoadProgressFill"></div>
+                            <div class="progress-text" id="pdfLoadProgressText"></div>
+                        </div>
+                    </div>
+                    <div id="pdfPreview" class="pdf-preview">
+                        <p class="empty-state">请上传PDF文件</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script src="../script.js"></script>
+</body>
+</html>

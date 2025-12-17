@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片转PDF</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h1>转换工具</h1>
+            <nav>
+                <button class="nav-btn active" data-tab="image-to-pdf">图片转PDF</button>
+                <a href="../pdf2pic/" class="nav-btn">PDF转图片</a>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <!-- 图片转PDF -->
+            <section id="image-to-pdf" class="tab-content active">
+                <div class="section-header">
+                    <h2>图片转PDF</h2>
+                </div>
+                <div class="progress-container" id="imageProgressContainer" style="display: none;">
+                    <div class="progress-bar" id="imageProgressBar">
+                        <div class="progress-fill" id="imageProgressFill"></div>
+                        <div class="progress-text" id="imageProgressText"></div>
+                    </div>
+                </div>
+                <div class="upload-section">
+                    <div class="upload-area" id="imageUploadArea">
+                        <input type="file" id="imageInput" multiple accept="image/*" style="display: none;">
+                        <button id="uploadBtn" class="primary-btn">上传图片</button>
+                        <p>或拖拽图片到此处</p>
+                    </div>
+                </div>
+                
+                <div class="controls-section">
+                    <div class="controls-group">
+                        <div class="control-item">
+                            <label>页面大小:</label>
+                            <select id="pageSize">
+                                <option value="A4">A4</option>
+                                <option value="A3">A3</option>
+                                <option value="A5">A5</option>
+                                <option value="Letter">Letter</option>
+                                <option value="Legal">Legal</option>
+                                <option value="Custom">自定义</option>
+                            </select>
+                        </div>
+                        <div class="control-item">
+                            <label>页面朝向:</label>
+                            <select id="pageOrientation">
+                                <option value="auto">自动</option>
+                                <option value="portrait">纵向</option>
+                                <option value="landscape">横向</option>
+                            </select>
+                        </div>
+                        <div class="control-item">
+                            <label>页边距(pt):</label>
+                            <input type="number" id="margin" min="0" value="0" placeholder="默认: 0">
+                        </div>
+                        <div class="control-item">
+                            <label>PDF文件名:</label>
+                            <input type="text" id="pdfFileName" placeholder="默认: merged.pdf">
+                        </div>
+                    </div>
+                    <div class="controls-group">
+                        <button id="sortByName" class="secondary-btn">按文件名排序</button>
+                        <button id="sortByTime" class="secondary-btn">按上传时间排序</button>
+                        <button id="generatePdf" class="primary-btn">生成PDF</button>
+                    </div>
+                </div>
+                
+                <div class="preview-section">
+                    <div class="preview-header">
+                        <h3>图片预览</h3>
+                        <button id="clearImages" class="secondary-btn">清空</button>
+                    </div>
+                    <div class="image-grid" id="imageGrid">
+                        <p class="empty-state">请上传图片</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script src="../script.js"></script>
+</body>
+</html>

@@ -7,9 +7,21 @@ let currentLoadingTask = null;
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
-    initializeTabs();
-    initializeImageToPdf();
-    initializePdfToImage();
+    // 根据URL路径自动初始化对应的功能
+    const path = window.location.pathname;
+    
+    if (path.includes('/pic2pdf/')) {
+        // 只初始化图片转PDF功能
+        initializeImageToPdf();
+    } else if (path.includes('/pdf2pic/')) {
+        // 只初始化PDF转图片功能
+        initializePdfToImage();
+    } else {
+        // 默认情况：初始化所有功能
+        initializeTabs();
+        initializeImageToPdf();
+        initializePdfToImage();
+    }
 });
 
 // 初始化标签页功能
