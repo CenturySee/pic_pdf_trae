@@ -74,20 +74,33 @@ class I18n {
     
     // 切换语言
     async switchLanguage(lang) {
-        const success = await this.init(lang);
-        if (success) {
-            // 更新URL并重新加载页面
-            const path = window.location.pathname;
-            const newPath = path.replace(/^\/[a-z]{2}\//, `/${lang}/`);
-            window.location.href = newPath;
+        // 直接更新URL并重新加载页面到对应语言目录
+        const path = window.location.pathname;
+        let newPath;
+        
+        // 检查当前路径是否包含语言子目录
+        if (/^\/[a-z]{2}\/$/.test(path)) {
+            // 如果包含，替换为新语言
+            newPath = path.replace(/^\/[a-z]{2}\/$/, `/${lang}/`);
+        } else if (/^\/[a-z]{2}\//.test(path)) {
+            // 如果包含语言目录但不是根路径
+            newPath = path.replace(/^\/[a-z]{2}\//, `/${lang}/`);
+        } else if (path === '/') {
+            // 如果是根路径，直接添加新语言目录
+            newPath = `/${lang}/`;
+        } else {
+            // 如果是其他路径，在路径前添加新语言目录
+            newPath = `/${lang}${path}`;
         }
+        
+        window.location.href = newPath;
     }
 }
 
 // 创建全局实例
 const i18n = new I18n();
 
-// 语言切换功能
-function changeLanguage(lang) {
+// 语言切换功能 - 确保在全局作用域可用
+window.changeLanguage = function(lang) {
     i18n.switchLanguage(lang);
 }
