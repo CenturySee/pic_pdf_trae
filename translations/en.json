@@ -1,0 +1,75 @@
+{
+  "home": {
+    "title": "Image PDF Converter - Home",
+    "main_title": "Image PDF Converter",
+    "subtitle": "Fast, Secure, Free Online Conversion Service",
+    "pic2pdf_title": "Image to PDF",
+    "pic2pdf_desc": "Merge multiple images into a single PDF file",
+    "pdf2pic_title": "PDF to Image",
+    "pdf2pic_desc": "Convert PDF files to high-quality images"
+  },
+  "common": {
+    "convert_tools": "Conversion Tools",
+    "image_to_pdf": "Image to PDF",
+    "pdf_to_image": "PDF to Image",
+    "upload": "Upload",
+    "drag_drop": "or drag and drop here",
+    "generating": "Generating...",
+    "converting": "Converting...",
+    "please_upload_images": "Please upload images first",
+    "please_upload_pdf": "Please upload PDF first",
+    "generation_failed": "PDF generation failed, please try again",
+    "conversion_failed": "Conversion failed, please try again",
+    "pause_preview": "Pause Preview",
+    "clear": "Clear",
+    "preparing": "Preparing...",
+    "loading": "Loading...",
+    "rendering_pages": "Rendering pages...",
+    "rendering": "Rendering...",
+    "preview_paused": "Preview paused",
+    "pause_preview_hint": "You can click the \"Convert to Images\" button directly to convert images",
+    "failed": "Failed",
+    "completed": "Completed",
+    "read_failed": "Read failed"
+  },
+  "image_to_pdf": {
+    "title": "Image to PDF",
+    "page_size": "Page Size:",
+    "page_orientation": "Page Orientation:",
+    "margin": "Margin (pt):",
+    "pdf_filename": "PDF Filename:",
+    "sort_by_name": "Sort by Name",
+    "sort_by_time": "Sort by Time",
+    "generate_pdf": "Generate PDF",
+    "upload_images": "Upload Images",
+    "image_preview": "Image Preview",
+    "rotate_image": "Rotate Image",
+    "delete_image": "Delete Image"
+  },
+  "pdf_to_image": {
+    "title": "PDF to Image",
+    "dpi": "DPI:",
+    "image_format": "Image Format:",
+    "convert_to_images": "Convert to Images",
+    "upload_pdf": "Upload PDF",
+    "pdf_preview": "PDF Preview"
+  },
+  "languages": {
+    "zh": "中文",
+    "en": "English",
+    "ja": "日本語"
+  },
+  "page_sizes": {
+    "A4": "A4",
+    "A3": "A3",
+    "A5": "A5",
+    "Letter": "Letter",
+    "Legal": "Legal",
+    "Custom": "Custom"
+  },
+  "orientations": {
+    "auto": "Auto",
+    "portrait": "Portrait",
+    "landscape": "Landscape"
+  }
+}

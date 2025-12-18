@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="pdf_to_image.title">PDF转图片</title>
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../../style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+    <!-- 语言切换按钮 -->
+    <div class="language-switcher">
+        <button class="lang-switch-btn" onclick="changeLanguage('zh')" data-i18n="languages.zh">中文</button>
+        <button class="lang-switch-btn" onclick="changeLanguage('en')" data-i18n="languages.en">English</button>
+        <button class="lang-switch-btn active" onclick="changeLanguage('ja')" data-i18n="languages.ja">日本語</button>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h1 data-i18n="common.convert_tools">转换工具</h1>
+            <nav>
+                <a href="../pic2pdf/" class="nav-btn" data-i18n="common.image_to_pdf">图片转PDF</a>
+                <button class="nav-btn active" data-tab="pdf-to-image" data-i18n="common.pdf_to_image">PDF转图片</button>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <!-- PDF转图片 -->
+            <section id="pdf-to-image" class="tab-content active">
+                <div class="section-header">
+                    <h2 data-i18n="pdf_to_image.title">PDF转图片</h2>
+                </div>
+                <div class="progress-container" id="pdfProgressContainer" style="display: none;">
+                    <div class="progress-bar" id="pdfProgressBar">
+                        <div class="progress-fill" id="pdfProgressFill"></div>
+                        <div class="progress-text" id="pdfProgressText"></div>
+                    </div>
+                </div>
+                <div class="upload-section">
+                    <div class="upload-area" id="pdfUploadArea">
+                        <input type="file" id="pdfInput" accept=".pdf" style="display: none;">
+                        <button id="pdfUploadBtn" class="primary-btn" data-i18n="pdf_to_image.upload_pdf">上传PDF</button>
+                        <p data-i18n="common.drag_drop">或拖拽PDF到此处</p>
+                    </div>
+                </div>
+                
+                <div class="controls-section">
+                    <div class="controls-group">
+                        <div class="control-item">
+                            <label data-i18n="pdf_to_image.dpi">清晰度(DPI):</label>
+                            <select id="dpi">
+                                <option value="96">96</option>
+                                <option value="150">150</option>
+                                <option value="300" selected>300</option>
+                                <option value="600">600</option>
+                            </select>
+                        </div>
+                        <div class="control-item">
+                            <label data-i18n="pdf_to_image.image_format">图片格式:</label>
+                            <select id="imageFormat">
+                                <option value="png" selected>PNG</option>
+                                <option value="jpeg">JPG</option>
+                                <option value="webp">WebP</option>
+                            </select>
+                        </div>
+                        <button id="convertPdf" class="primary-btn" data-i18n="pdf_to_image.convert_to_images">转换为图片</button>
+                    </div>
+                </div>
+                
+                <div class="preview-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 data-i18n="pdf_to_image.pdf_preview">PDF预览</h3>
+                        <button id="pausePreview" class="secondary-btn" disabled style="font-size: 0.875rem; padding: 0.5rem 1rem;" data-i18n="common.pause_preview">暂停预览</button>
+                    </div>
+                    <div class="progress-container" id="pdfLoadProgressContainer" style="display: none;">
+                        <div class="progress-bar" id="pdfLoadProgressBar">
+                            <div class="progress-fill" id="pdfLoadProgressFill"></div>
+                            <div class="progress-text" id="pdfLoadProgressText"></div>
+                        </div>
+                    </div>
+                    <div id="pdfPreview" class="pdf-preview">
+                        <p class="empty-state" data-i18n="common.please_upload_pdf">请上传PDF文件</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- 引入国际化脚本 -->
+    <script src="/i18n.js"></script>
+    <script src="../../script.js"></script>
+    <script>
+        // 初始化国际化
+        document.addEventListener('DOMContentLoaded', async () => {
+            await i18n.init('ja');
+        });
+    </script>
+</body>
+</html>

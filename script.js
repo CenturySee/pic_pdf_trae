@@ -7,6 +7,11 @@ let currentLoadingTask = null;
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
+    // 初始化PDF.js
+    if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    }
+    
     // 根据URL路径自动初始化对应的功能
     const path = window.location.pathname;
     
@@ -141,7 +146,7 @@ function updateImageGrid() {
     const imageGrid = document.getElementById('imageGrid');
     
     if (uploadedImages.length === 0) {
-        imageGrid.innerHTML = '<p class="empty-state">请上传图片</p>';
+        imageGrid.innerHTML = `<p class="empty-state" data-i18n="common.please_upload_images">${i18n.t('common.please_upload_images')}</p>`;
         return;
     }
     
@@ -274,7 +279,7 @@ function sortImages(type) {
 // 生成PDF
 async function generatePdf() {
     if (uploadedImages.length === 0) {
-        alert('请先上传图片');
+        alert(i18n.t('common.please_upload_images'));
         return;
     }
     
@@ -284,7 +289,7 @@ async function generatePdf() {
     const originalText = generatePdfBtn.textContent;
     // 禁用按钮并显示加载状态
     generatePdfBtn.disabled = true;
-    generatePdfBtn.textContent = '生成中...';
+    generatePdfBtn.textContent = i18n.t('common.generating');
     
     // 获取进度条元素
     const progressContainer = document.getElementById('imageProgressContainer');
@@ -321,7 +326,7 @@ async function generatePdf() {
             // 更新进度
             currentProgress++;
             const progressPercentage = Math.round((currentProgress / totalImages) * 100);
-            generatePdfBtn.textContent = `生成中... ${currentProgress}/${totalImages}`;
+            generatePdfBtn.textContent = `${i18n.t('common.generating')} ${currentProgress}/${totalImages}`;
             
             // 更新进度条
             progressFill.style.width = `${progressPercentage}%`;
@@ -477,12 +482,12 @@ async function generatePdf() {
         
     } catch (error) {
         console.error('生成PDF失败:', error);
-        alert('生成PDF失败，请重试');
+        alert(i18n.t('common.generation_failed'));
     } finally {
         // 恢复按钮状态
         const generatePdfBtn = document.getElementById('generatePdf');
         generatePdfBtn.disabled = false;
-        generatePdfBtn.textContent = '生成PDF';
+        generatePdfBtn.textContent = i18n.t('image_to_pdf.generate_pdf');
         
         // 隐藏进度条
         progressContainer.style.display = 'none';
@@ -574,10 +579,10 @@ function previewPdf(file) {
     progressContainer.style.visibility = 'visible';
     progressContainer.style.opacity = '1';
     progressFill.style.width = '5%'; // 初始显示5%，表示开始处理
-    progressText.textContent = '准备中...';
+    progressText.textContent = i18n.t('common.preparing');
     
     // 清空之前的预览内容
-    pdfPreview.innerHTML = `<h4>正在加载 ${file.name}...</h4>`;
+    pdfPreview.innerHTML = `<h4>${i18n.t('common.generating')} ${file.name}...</h4>`;
     
     reader.onload = async function(e) {
         const arrayBuffer = e.target.result;
@@ -588,7 +593,7 @@ function previewPdf(file) {
             
             // 更新进度条状态
             progressFill.style.width = '20%';
-            progressText.textContent = '解析PDF...';
+            progressText.textContent = i18n.t('common.generating');
             
             // 使用pdf.js加载PDF，并添加进度回调
             console.log('开始加载PDF');
@@ -610,7 +615,7 @@ function previewPdf(file) {
                 // 计算进度百分比
                 const progressPercentage = Math.round((20 + progressData.loaded / progressData.total * 60)); // 20%-80%
                 progressFill.style.width = `${progressPercentage}%`;
-                progressText.textContent = `加载中... ${Math.round(progressData.loaded / progressData.total * 100)}%`;
+                progressText.textContent = `${i18n.t('common.loading')} ${Math.round(progressData.loaded / progressData.total * 100)}%`;
             };
             
             // 检查是否已暂停
@@ -623,7 +628,7 @@ function previewPdf(file) {
             
             // PDF加载完成，准备渲染页面
             progressFill.style.width = '80%';
-            progressText.textContent = '渲染页面...';
+            progressText.textContent = i18n.t('common.rendering_pages');
             
             pdfPreview.innerHTML = `<h4>${file.name} (${pdf.numPages} 页)</h4>`;
             
@@ -671,7 +676,7 @@ function previewPdf(file) {
                 renderProgress++;
                 const renderProgressPercentage = Math.round(80 + (renderProgress / totalPages) * 20); // 80%-100%
                 progressFill.style.width = `${renderProgressPercentage}%`;
-                progressText.textContent = `渲染中... ${renderProgress}/${totalPages}`;
+                progressText.textContent = `${i18n.t('common.rendering')} ${renderProgress}/${totalPages}`;
             }
             
             // 检查是否已暂停
@@ -681,7 +686,7 @@ function previewPdf(file) {
             
             // 所有页面渲染完成
             progressFill.style.width = '100%';
-            progressText.textContent = '完成';
+            progressText.textContent = i18n.t('common.completed');
             
             // 延迟隐藏进度条，让用户看到完成状态
             setTimeout(() => {
@@ -694,10 +699,10 @@ function previewPdf(file) {
             // 如果不是用户手动暂停导致的错误，则显示错误信息
             if (isPreviewingPdf) {
                 console.error('预览PDF失败:', error);
-                pdfPreview.innerHTML = '<p class="empty-state">PDF预览失败</p>';
+                pdfPreview.innerHTML = `<p class="empty-state">${i18n.t('common.conversion_failed')}</p>`;
                 // 显示错误信息并隐藏进度条
                 progressFill.style.width = '100%';
-                progressText.textContent = '失败';
+                progressText.textContent = i18n.t('common.failed');
                 setTimeout(() => {
                     progressContainer.style.display = 'none';
                     progressFill.style.width = '0%';
@@ -717,14 +722,14 @@ function previewPdf(file) {
     reader.onerror = function() {
         if (isPreviewingPdf) {
             console.error('读取PDF文件失败');
-            pdfPreview.innerHTML = '<p class="empty-state">读取PDF文件失败</p>';
+            pdfPreview.innerHTML = `<p class="empty-state">${i18n.t('common.conversion_failed')}</p>`;
             // 显示错误信息并隐藏进度条
             const progressFill = document.getElementById('pdfLoadProgressFill');
             const progressText = document.getElementById('pdfLoadProgressText');
             const progressContainer = document.getElementById('pdfLoadProgressContainer');
             
             progressFill.style.width = '100%';
-            progressText.textContent = '读取失败';
+            progressText.textContent = i18n.t('common.read_failed');
             setTimeout(() => {
                 progressContainer.style.display = 'none';
                 progressFill.style.width = '0%';
@@ -765,7 +770,7 @@ function pausePreview() {
     const pausePreviewBtn = document.getElementById('pausePreview');
     
     // 显示提示信息
-    pdfPreview.innerHTML = `<h4>预览已暂停</h4><p>您可以直接点击"转换为图片"按钮进行图片转换</p>`;
+        pdfPreview.innerHTML = `<h4>${i18n.t('common.preview_paused')}</h4><p>${i18n.t('common.pause_preview_hint')}</p>`;
     
     // 隐藏进度条
     progressContainer.style.display = 'none';
@@ -777,7 +782,7 @@ function pausePreview() {
 // 将PDF转换为图片
 async function convertPdfToImages() {
     if (!currentPdf) {
-        alert('请先上传PDF文件');
+        alert(i18n.t('common.please_upload_pdf'));
         return;
     }
     
@@ -787,7 +792,7 @@ async function convertPdfToImages() {
     const originalText = convertBtn.textContent;
     // 禁用按钮并显示加载状态
     convertBtn.disabled = true;
-    convertBtn.textContent = '转换中...';
+    convertBtn.textContent = i18n.t('common.converting');
     
     // 获取进度条元素
     const progressContainer = document.getElementById('pdfProgressContainer');
@@ -882,7 +887,7 @@ async function convertPdfToImages() {
         
     } catch (error) {
         console.error('PDF转图片失败:', error);
-        alert('PDF转图片失败，请重试');
+        alert(i18n.t('common.conversion_failed'));
     } finally {
         // 恢复按钮状态
         convertBtn.disabled = false;
@@ -895,5 +900,3 @@ async function convertPdfToImages() {
     }
 }
 
-// 初始化PDF.js
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';

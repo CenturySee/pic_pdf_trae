@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>图片PDF转换工具 - 首页</title>
+    <title>Image PDF Converter - Home</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* 导航页面样式 */
-        .home-container {
+        /* 自动跳转页面样式 */
+        .auto-redirect-container {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -17,87 +17,79 @@
             min-height: 100vh;
             padding: 2rem;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .home-header {
             text-align: center;
-            margin-bottom: 3rem;
         }
         
-        .home-title {
-            font-size: 2.5rem;
+        .redirect-message {
             color: white;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        .home-subtitle {
             font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
         }
         
-        .navigation-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            max-width: 800px;
-            width: 100%;
+        .language-selector {
+            display: flex;
+            gap: 1rem;
         }
         
-        .nav-card {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            text-align: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        .lang-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
             transition: all 0.3s ease;
-            text-decoration: none;
+            background: white;
             color: #333;
         }
         
-        .nav-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-        }
-        
-        .nav-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            display: block;
-        }
-        
-        .nav-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-            color: #333;
-        }
-        
-        .nav-card p {
-            color: #666;
-            font-size: 0.95rem;
+        .lang-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
     </style>
 </head>
 <body>
-    <div class="home-container">
-        <div class="home-header">
-            <h1 class="home-title">图片PDF转换工具</h1>
-            <p class="home-subtitle">快速、安全、免费的在线转换服务</p>
-        </div>
-        
-        <div class="navigation-grid">
-            <a href="pic2pdf/" class="nav-card">
-                <span class="nav-icon">🖼️→📄</span>
-                <h3>图片转PDF</h3>
-                <p>将多张图片合并为单个PDF文件</p>
-            </a>
-            
-            <a href="pdf2pic/" class="nav-card">
-                <span class="nav-icon">📄→🖼️</span>
-                <h3>PDF转图片</h3>
-                <p>将PDF文件转换为高质量图片</p>
-            </a>
+    <div class="auto-redirect-container">
+        <h1 style="color: white; margin-bottom: 1rem;">Image PDF Converter</h1>
+        <p class="redirect-message">正在根据您的浏览器语言自动跳转到合适的页面...</p>
+        <p class="redirect-message" style="font-size: 1rem; opacity: 0.9;">如果没有自动跳转，请手动选择语言：</p>
+        <div class="language-selector">
+            <button class="lang-btn" onclick="redirectToLanguage('zh')">中文</button>
+            <button class="lang-btn" onclick="redirectToLanguage('en')">English</button>
+            <button class="lang-btn" onclick="redirectToLanguage('ja')">日本語</button>
         </div>
     </div>
+
+    <script>
+        // 自动语言检测和跳转
+        function autoDetectLanguage() {
+            // 获取浏览器默认语言
+            const browserLang = navigator.language || navigator.userLanguage;
+            let detectedLang = 'en'; // 默认英语
+            
+            // 检查是否为中文环境
+            if (browserLang.startsWith('zh')) {
+                detectedLang = 'zh';
+            } 
+            // 检查是否为日文环境
+            else if (browserLang.startsWith('ja')) {
+                detectedLang = 'ja';
+            }
+            
+            // 延迟跳转，给用户时间看到页面
+            setTimeout(() => {
+                redirectToLanguage(detectedLang);
+            }, 1500);
+        }
+        
+        // 跳转到指定语言的页面
+        function redirectToLanguage(lang) {
+            window.location.href = `/${lang}/`;
+        }
+        
+        // 页面加载完成后执行自动检测
+        document.addEventListener('DOMContentLoaded', autoDetectLanguage);
+    </script>
 </body>
 </html>

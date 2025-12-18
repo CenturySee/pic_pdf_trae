@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="image_to_pdf.title">图片转PDF</title>
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../../style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+    <!-- 语言切换按钮 -->
+    <div class="language-switcher">
+        <button class="lang-switch-btn" onclick="changeLanguage('zh')" data-i18n="languages.zh">中文</button>
+        <button class="lang-switch-btn" onclick="changeLanguage('en')" data-i18n="languages.en">English</button>
+        <button class="lang-switch-btn active" onclick="changeLanguage('ja')" data-i18n="languages.ja">日本語</button>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h1 data-i18n="common.convert_tools">转换工具</h1>
+            <nav>
+                <button class="nav-btn active" data-tab="image-to-pdf" data-i18n="common.image_to_pdf">图片转PDF</button>
+                <a href="../pdf2pic/" class="nav-btn" data-i18n="common.pdf_to_image">PDF转图片</a>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <!-- 图片转PDF -->
+            <section id="image-to-pdf" class="tab-content active">
+                <div class="section-header">
+                    <h2 data-i18n="image_to_pdf.title">图片转PDF</h2>
+                </div>
+                <div class="progress-container" id="imageProgressContainer" style="display: none;">
+                    <div class="progress-bar" id="imageProgressBar">
+                        <div class="progress-fill" id="imageProgressFill"></div>
+                        <div class="progress-text" id="imageProgressText"></div>
+                    </div>
+                </div>
+                <div class="upload-section">
+                    <div class="upload-area" id="imageUploadArea">
+                        <input type="file" id="imageInput" multiple accept="image/*" style="display: none;">
+                        <button id="uploadBtn" class="primary-btn" data-i18n="image_to_pdf.upload_images">上传图片</button>
+                        <p data-i18n="common.drag_drop">或拖拽图片到此处</p>
+                    </div>
+                </div>
+                
+                <div class="controls-section">
+                    <div class="controls-group">
+                        <div class="control-item">
+                            <label data-i18n="image_to_pdf.page_size">页面大小:</label>
+                            <select id="pageSize">
+                                <option value="A4" data-i18n="page_sizes.A4">A4</option>
+                                <option value="A3" data-i18n="page_sizes.A3">A3</option>
+                                <option value="A5" data-i18n="page_sizes.A5">A5</option>
+                                <option value="Letter" data-i18n="page_sizes.Letter">Letter</option>
+                                <option value="Legal" data-i18n="page_sizes.Legal">Legal</option>
+                                <option value="Custom" data-i18n="page_sizes.Custom">自定义</option>
+                            </select>
+                        </div>
+                        <div class="control-item">
+                            <label data-i18n="image_to_pdf.page_orientation">页面朝向:</label>
+                            <select id="pageOrientation">
+                                <option value="auto" data-i18n="orientations.auto">自动</option>
+                                <option value="portrait" data-i18n="orientations.portrait">纵向</option>
+                                <option value="landscape" data-i18n="orientations.landscape">横向</option>
+                            </select>
+                        </div>
+                        <div class="control-item">
+                            <label data-i18n="image_to_pdf.margin">页边距(pt):</label>
+                            <input type="number" id="margin" min="0" value="0" placeholder="默认: 0">
+                        </div>
+                        <div class="control-item">
+                            <label data-i18n="image_to_pdf.pdf_filename">PDF文件名:</label>
+                            <input type="text" id="pdfFileName" placeholder="默认: merged.pdf">
+                        </div>
+                    </div>
+                    <div class="controls-group">
+                        <button id="sortByName" class="secondary-btn" data-i18n="image_to_pdf.sort_by_name">按文件名排序</button>
+                        <button id="sortByTime" class="secondary-btn" data-i18n="image_to_pdf.sort_by_time">按上传时间排序</button>
+                        <button id="generatePdf" class="primary-btn" data-i18n="image_to_pdf.generate_pdf">生成PDF</button>
+                    </div>
+                </div>
+                
+                <div class="preview-section">
+                    <div class="preview-header">
+                        <h3 data-i18n="image_to_pdf.image_preview">图片预览</h3>
+                        <button id="clearImages" class="secondary-btn" data-i18n="common.clear">清空</button>
+                    </div>
+                    <div class="image-grid" id="imageGrid">
+                        <p class="empty-state" data-i18n="common.please_upload_images">请上传图片</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- 引入国际化脚本 -->
+    <script src="/i18n.js"></script>
+    <script src="../../script.js"></script>
+    <script>
+        // 初始化国际化
+        document.addEventListener('DOMContentLoaded', async () => {
+            await i18n.init('ja');
+        });
+    </script>
+</body>
+</html>

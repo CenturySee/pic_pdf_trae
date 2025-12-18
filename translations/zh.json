@@ -1,0 +1,75 @@
+{
+  "home": {
+    "title": "图片PDF转换工具 - 首页",
+    "main_title": "图片PDF转换工具",
+    "subtitle": "快速、安全、免费的在线转换服务",
+    "pic2pdf_title": "图片转PDF",
+    "pic2pdf_desc": "将多张图片合并为单个PDF文件",
+    "pdf2pic_title": "PDF转图片",
+    "pdf2pic_desc": "将PDF文件转换为高质量图片"
+  },
+  "common": {
+    "convert_tools": "转换工具",
+    "image_to_pdf": "图片转PDF",
+    "pdf_to_image": "PDF转图片",
+    "upload": "上传",
+    "drag_drop": "或拖拽到此处",
+    "generating": "生成中...",
+    "converting": "转换中...",
+    "please_upload_images": "请先上传图片",
+    "please_upload_pdf": "请先上传PDF文件",
+    "generation_failed": "生成PDF失败，请重试",
+    "conversion_failed": "转换失败，请重试",
+    "pause_preview": "暂停预览",
+    "clear": "清空",
+    "preparing": "准备中...",
+    "loading": "加载中...",
+    "rendering_pages": "渲染页面...",
+    "rendering": "渲染中...",
+    "preview_paused": "预览已暂停",
+    "pause_preview_hint": "您可以直接点击\"转换为图片\"按钮进行图片转换",
+    "failed": "失败",
+    "completed": "完成",
+    "read_failed": "读取失败"
+  },
+  "image_to_pdf": {
+    "title": "图片转PDF",
+    "page_size": "页面大小:",
+    "page_orientation": "页面朝向:",
+    "margin": "页边距(pt):",
+    "pdf_filename": "PDF文件名:",
+    "sort_by_name": "按文件名排序",
+    "sort_by_time": "按上传时间排序",
+    "generate_pdf": "生成PDF",
+    "upload_images": "上传图片",
+    "image_preview": "图片预览",
+    "rotate_image": "旋转图片",
+    "delete_image": "删除图片"
+  },
+  "pdf_to_image": {
+    "title": "PDF转图片",
+    "dpi": "清晰度(DPI):",
+    "image_format": "图片格式:",
+    "convert_to_images": "转换为图片",
+    "upload_pdf": "上传PDF",
+    "pdf_preview": "PDF预览"
+  },
+  "languages": {
+    "zh": "中文",
+    "en": "English",
+    "ja": "日本語"
+  },
+  "page_sizes": {
+    "A4": "A4",
+    "A3": "A3",
+    "A5": "A5",
+    "Letter": "信纸",
+    "Legal": "法律文书",
+    "Custom": "自定义"
+  },
+  "orientations": {
+    "auto": "自动",
+    "portrait": "纵向",
+    "landscape": "横向"
+  }
+}
