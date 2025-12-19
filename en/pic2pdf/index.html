@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="image_to_pdf.title">Image to PDF</title>
+    <title>Image to PDF</title>
     <link rel="icon" href="../../favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="../../favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../../style.css">
@@ -12,26 +12,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body>
-    <!-- 语言切换按钮 -->
+    <!-- Language switcher -->
     <div class="language-switcher">
-        <button class="lang-switch-btn" onclick="changeLanguage('zh')" data-i18n="languages.zh">中文</button>
-        <button class="lang-switch-btn active" onclick="changeLanguage('en')" data-i18n="languages.en">English</button>
-        <button class="lang-switch-btn" onclick="changeLanguage('ja')" data-i18n="languages.ja">日本語</button>
+        <button class="lang-switch-btn" onclick="changeLanguage('zh')">中文</button>
+        <button class="lang-switch-btn active" onclick="changeLanguage('en')">English</button>
+        <button class="lang-switch-btn" onclick="changeLanguage('ja')">日本語</button>
     </div>
 
     <div class="container">
         <aside class="sidebar">
-            <h1 data-i18n="common.convert_tools">Conversion Tools</h1>
+            <h1>Conversion Tools</h1>
             <nav>
-                <button class="nav-btn active" data-tab="image-to-pdf" data-i18n="common.image_to_pdf">Image to PDF</button>
-                <a href="../pdf2pic/" class="nav-btn" data-i18n="common.pdf_to_image">PDF to Image</a>
+                <button class="nav-btn active" data-tab="image-to-pdf">Image to PDF</button>
+                <a href="../pdf2pic/" class="nav-btn">PDF to Image</a>
             </nav>
         </aside>
         <main class="main-content">
             <!-- Image to PDF -->
             <section id="image-to-pdf" class="tab-content active">
                 <div class="section-header">
-                    <h2 data-i18n="image_to_pdf.title">Image to PDF</h2>
+                    <h2>Image to PDF</h2>
                 </div>
                 <div class="progress-container" id="imageProgressContainer" style="display: none;">
                     <div class="progress-bar" id="imageProgressBar">
@@ -42,15 +42,15 @@
                 <div class="upload-section">
                     <div class="upload-area" id="imageUploadArea">
                         <input type="file" id="imageInput" multiple accept="image/*" style="display: none;">
-                        <button id="uploadBtn" class="primary-btn" data-i18n="image_to_pdf.upload_images">Upload Images</button>
-                        <p data-i18n="common.drag_drop">or drag images here</p>
+                        <button id="uploadBtn" class="primary-btn">Upload Images</button>
+                        <p>or drag images here</p>
                     </div>
                 </div>
                 
                 <div class="controls-section">
                     <div class="controls-group">
                         <div class="control-item">
-                            <label data-i18n="image_to_pdf.page_size">Page Size:</label>
+                            <label>Page Size:</label>
                             <select id="pageSize">
                                 <option value="A4">A4</option>
                                 <option value="A3">A3</option>
@@ -61,7 +61,7 @@
                             </select>
                         </div>
                         <div class="control-item">
-                            <label data-i18n="image_to_pdf.page_orientation">Page Orientation:</label>
+                            <label>Page Orientation:</label>
                             <select id="pageOrientation">
                                 <option value="auto">Auto</option>
                                 <option value="portrait">Portrait</option>
@@ -69,42 +69,34 @@
                             </select>
                         </div>
                         <div class="control-item">
-                            <label data-i18n="image_to_pdf.margin">Margin (pt):</label>
+                            <label>Margin (pt):</label>
                             <input type="number" id="margin" min="0" value="0" placeholder="Default: 0">
                         </div>
                         <div class="control-item">
-                            <label data-i18n="image_to_pdf.pdf_filename">PDF Filename:</label>
+                            <label>PDF Filename:</label>
                             <input type="text" id="pdfFileName" placeholder="Default: merged.pdf">
                         </div>
                     </div>
                     <div class="controls-group">
-                        <button id="sortByName" class="secondary-btn" data-i18n="image_to_pdf.sort_by_name">Sort by Name</button>
-                        <button id="sortByTime" class="secondary-btn" data-i18n="image_to_pdf.sort_by_time">Sort by Time</button>
-                        <button id="generatePdf" class="primary-btn" data-i18n="image_to_pdf.generate_pdf">Generate PDF</button>
+                        <button id="sortByName" class="secondary-btn">Sort by Name</button>
+                        <button id="sortByTime" class="secondary-btn">Sort by Time</button>
+                        <button id="generatePdf" class="primary-btn">Generate PDF</button>
                     </div>
                 </div>
                 
                 <div class="preview-section">
                     <div class="preview-header">
-                        <h3 data-i18n="image_to_pdf.image_preview">Image Preview</h3>
-                        <button id="clearImages" class="secondary-btn" data-i18n="common.clear">Clear</button>
+                        <h3>Image Preview</h3>
+                        <button id="clearImages" class="secondary-btn">Clear</button>
                     </div>
                     <div class="image-grid" id="imageGrid">
-                        <p class="empty-state" data-i18n="common.please_upload_images">Please upload images</p>
+                        <p class="empty-state">Please upload images</p>
                     </div>
                 </div>
             </section>
         </main>
     </div>
     
-    <!-- Import internationalization script -->
-    <script src="/i18n.js"></script>
-    <script src="../../script.js"></script>
-    <script>
-        // Initialize internationalization
-        document.addEventListener('DOMContentLoaded', async () => {
-            await i18n.init('en');
-        });
-    </script>
+    <script src="../../en/script.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="home.title">图片PDF转换工具 - 首页</title>
+    <title>图片PDF转换工具 - 首页</title>
     <link rel="icon" href="../favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../style.css">
@@ -83,39 +83,33 @@
 <body>
     <!-- 语言切换按钮 -->
     <div class="language-switcher">
-        <button class="lang-switch-btn active" onclick="changeLanguage('zh')" data-i18n="languages.zh">中文</button>
-        <button class="lang-switch-btn" onclick="changeLanguage('en')" data-i18n="languages.en">English</button>
-        <button class="lang-switch-btn" onclick="changeLanguage('ja')" data-i18n="languages.ja">日本語</button>
+        <button class="lang-switch-btn active" onclick="changeLanguage('zh')">中文</button>
+        <button class="lang-switch-btn" onclick="changeLanguage('en')">English</button>
+        <button class="lang-switch-btn" onclick="changeLanguage('ja')">日本語</button>
     </div>
 
     <div class="home-container">
         <div class="home-header">
-            <h1 class="home-title" data-i18n="home.main_title">图片PDF转换工具</h1>
-            <p class="home-subtitle" data-i18n="home.subtitle">快速、安全、免费的在线转换服务</p>
+            <h1 class="home-title">图片PDF转换工具</h1>
+            <p class="home-subtitle">快速、安全、免费的在线转换服务</p>
         </div>
         
         <div class="navigation-grid">
             <a href="pic2pdf/" class="nav-card">
                 <span class="nav-icon">🖼️→📄</span>
-                <h3 data-i18n="home.pic2pdf_title">图片转PDF</h3>
-                <p data-i18n="home.pic2pdf_desc">将多张图片合并为单个PDF文件</p>
+                <h3>图片转PDF</h3>
+                <p>将多张图片合并为单个PDF文件</p>
             </a>
             
             <a href="pdf2pic/" class="nav-card">
                 <span class="nav-icon">📄→🖼️</span>
-                <h3 data-i18n="home.pdf2pic_title">PDF转图片</h3>
-                <p data-i18n="home.pdf2pic_desc">将PDF文件转换为高质量图片</p>
+                <h3>PDF转图片</h3>
+                <p>将PDF文件转换为高质量图片</p>
             </a>
         </div>
     </div>
-
-    <!-- 引入国际化脚本 -->
-    <script src="/i18n.js"></script>
-    <script>
-        // 初始化国际化
-        document.addEventListener('DOMContentLoaded', async () => {
-            await i18n.init('zh');
-        });
-    </script>
+    
+    <!-- JavaScript -->
+    <script src="script.js"></script>
 </body>
 </html>

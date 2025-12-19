@@ -146,7 +146,7 @@ function updateImageGrid() {
     const imageGrid = document.getElementById('imageGrid');
     
     if (uploadedImages.length === 0) {
-        imageGrid.innerHTML = `<p class="empty-state" data-i18n="common.please_upload_images">Please upload images first</p>`;
+        imageGrid.innerHTML = `<p class="empty-state">Please upload images first</p>`;
         return;
     }
     
@@ -162,8 +162,8 @@ function updateImageGrid() {
             <div style="position: relative; overflow: hidden; height: 150px;">
                 <img src="${image.url}" alt="${image.file.name}" class="image-preview" style="transform: rotate(${image.rotation}deg); width: 100%; height: 100%; object-fit: contain;">
                 <div style="position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.25rem;">
-                    <button class="rotate-btn" data-index="${index}" title="旋转图片">&#8635;</button>
-                    <button class="delete-btn" data-index="${index}" title="删除图片">&times;</button>
+                    <button class="rotate-btn" data-index="${index}" title="Rotate Image">&#8635;</button>
+                    <button class="delete-btn" data-index="${index}" title="Delete Image">&times;</button>
                 </div>
             </div>
             <div class="image-filename">${image.file.name}</div>
@@ -573,213 +573,158 @@ function previewPdf(file) {
     // 启用暂停预览按钮
     pausePreviewBtn.disabled = false;
     
-    // 立即显示进度条，确保用户能看到
-    console.log('显示进度条');
+    // 显示进度条
     progressContainer.style.display = 'block';
-    progressContainer.style.visibility = 'visible';
-    progressContainer.style.opacity = '1';
-    progressFill.style.width = '5%'; // 初始显示5%，表示开始处理
+    progressFill.style.width = '0%';
     progressText.textContent = 'Preparing...';
     
-    // 清空之前的预览内容
-    pdfPreview.innerHTML = `<h4>Generating... ${file.name}...</h4>`;
+    // 清空预览区域
+    pdfPreview.innerHTML = `<h4>Generating ${file.name}...</h4>`;
     
     reader.onload = async function(e) {
-        const arrayBuffer = e.target.result;
+        if (!isPreviewingPdf) return;
         
         try {
-            // 检查是否已暂停
-            if (!isPreviewingPdf) return;
-            
-            // 更新进度条状态
-            progressFill.style.width = '20%';
-            progressText.textContent = 'Generating...';
-            
-            // 使用pdf.js加载PDF，并添加进度回调
-            console.log('开始加载PDF');
+            // 创建PDF加载参数
             const loadingTask = pdfjsLib.getDocument({
-                data: arrayBuffer,
-                disableStream: false,
-                disableAutoFetch: true
+                data: e.target.result,
+                disableAutoFetch: true,
+                disableRange: false,
+                verbosity: 0
             });
             
-            // 保存加载任务，以便能够暂停
+            // 保存当前加载任务引用，以便后续取消
             currentLoadingTask = loadingTask;
             
             // 监听加载进度
-            loadingTask.onProgress = (progressData) => {
-                // 检查是否已暂停
+            loadingTask.onProgress = function(progressData) {
                 if (!isPreviewingPdf) return;
                 
-                console.log('PDF加载进度:', progressData);
-                // 计算进度百分比
-                const progressPercentage = Math.round((20 + progressData.loaded / progressData.total * 60)); // 20%-80%
+                // 更新进度条
+                const progressPercentage = Math.round(progressData.loaded / progressData.total * 100);
                 progressFill.style.width = `${progressPercentage}%`;
-                progressText.textContent = `${'Loading...'} ${Math.round(progressData.loaded / progressData.total * 100)}%`;
+                progressText.textContent = `Loading ${progressPercentage}%`;
             };
             
-            // 检查是否已暂停
+            // 加载PDF文档
+            const pdfDoc = await loadingTask.promise;
+            
             if (!isPreviewingPdf) return;
             
-            const pdf = await loadingTask.promise;
+            // 获取PDF总页数
+            const totalPages = pdfDoc.numPages;
             
-            // 检查是否已暂停
-            if (!isPreviewingPdf) return;
-            
-            // PDF加载完成，准备渲染页面
-            progressFill.style.width = '80%';
+            // 更新进度状态
             progressText.textContent = 'Rendering pages...';
             
-            pdfPreview.innerHTML = `<h4>${file.name} (${pdf.numPages} 页)</h4>`;
+            // 清空预览区域
+            pdfPreview.innerHTML = '';
             
-            // 创建一个容器来存放所有页面预览
-            const pagesContainer = document.createElement('div');
-            pagesContainer.className = 'pdf-pages-container';
-            
-            // 初始化渲染进度
+            // 渲染每一页
             let renderProgress = 0;
-            const totalPages = pdf.numPages;
             
-            // 渲染所有页面
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                // 检查是否已暂停
-                if (!isPreviewingPdf) return;
+            for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+                if (!isPreviewingPdf) break;
                 
-                const page = await pdf.getPage(pageNum);
-                const scale = 1.5;
-                const viewport = page.getViewport({ scale });
-                
-                const pageWrapper = document.createElement('div');
-                pageWrapper.className = 'pdf-page-wrapper';
-                
-                // 页面标题
-                const pageTitle = document.createElement('div');
-                pageTitle.className = 'pdf-page-title';
-                pageTitle.textContent = `第 ${pageNum} 页`;
-                
-                const canvas = document.createElement('canvas');
-                canvas.className = 'pdf-canvas';
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                
-                const ctx = canvas.getContext('2d');
-                await page.render({ canvasContext: ctx, viewport }).promise;
-                
-                // 检查是否已暂停
-                if (!isPreviewingPdf) return;
-                
-                pageWrapper.appendChild(pageTitle);
-                pageWrapper.appendChild(canvas);
-                pagesContainer.appendChild(pageWrapper);
-                
-                // 更新渲染进度
-                renderProgress++;
-                const renderProgressPercentage = Math.round(80 + (renderProgress / totalPages) * 20); // 80%-100%
-                progressFill.style.width = `${renderProgressPercentage}%`;
-                progressText.textContent = `${'Rendering...'} ${renderProgress}/${totalPages}`;
+                try {
+                    // 获取当前页
+                    const page = await pdfDoc.getPage(pageNum);
+                    
+                    // 设置渲染参数
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    
+                    // 创建Canvas元素
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    canvas.classList.add('pdf-preview-page');
+                    
+                    // 创建页面容器
+                    const pageContainer = document.createElement('div');
+                    pageContainer.classList.add('pdf-preview-page-container');
+                    pageContainer.appendChild(canvas);
+                    
+                    // 添加到预览区域
+                    pdfPreview.appendChild(pageContainer);
+                    
+                    // 渲染页面
+                    const renderContext = {
+                        canvasContext: ctx,
+                        viewport: viewport
+                    };
+                    
+                    // 监听渲染进度
+                    await page.render(renderContext).promise;
+                    
+                    // 更新进度
+                    renderProgress++;
+                    progressText.textContent = `Rendering ${renderProgress}/${totalPages}`;
+                    
+                    // 将页面数据添加到pdfPages数组
+                    pdfPages.push({
+                        pageNum: pageNum,
+                        canvas: canvas,
+                        width: viewport.width,
+                        height: viewport.height
+                    });
+                    
+                } catch (pageError) {
+                    console.error(`渲染页面 ${pageNum} 失败:`, pageError);
+                    if (!isPreviewingPdf) break;
+                }
             }
             
-            // 检查是否已暂停
-            if (!isPreviewingPdf) return;
-            
-            pdfPreview.appendChild(pagesContainer);
-            
-            // 所有页面渲染完成
-            progressFill.style.width = '100%';
-            progressText.textContent = 'Completed';
-            
-            // 延迟隐藏进度条，让用户看到完成状态
-            setTimeout(() => {
-                progressContainer.style.display = 'none';
-                progressFill.style.width = '0%';
-                progressText.textContent = '';
-            }, 500);
+            if (isPreviewingPdf) {
+                // 预览完成
+                progressText.textContent = 'Completed';
+            }
             
         } catch (error) {
-            // 如果不是用户手动暂停导致的错误，则显示错误信息
+            console.error('预览PDF失败:', error);
             if (isPreviewingPdf) {
-                console.error('预览PDF失败:', error);
-                pdfPreview.innerHTML = `<p class="empty-state">Conversion failed, please try again</p>`;
-                // 显示错误信息并隐藏进度条
-                progressFill.style.width = '100%';
+                pdfPreview.innerHTML = `<p class="empty-state">Conversion failed</p>`;
                 progressText.textContent = 'Failed';
-                setTimeout(() => {
-                    progressContainer.style.display = 'none';
-                    progressFill.style.width = '0%';
-                    progressText.textContent = '';
-                }, 1000);
             }
-        } finally {
-            // 重置预览状态
-            isPreviewingPdf = false;
-            currentLoadingTask = null;
-            
-            // 禁用暂停预览按钮
-            pausePreviewBtn.disabled = true;
         }
     };
     
-    reader.onerror = function() {
+    reader.onerror = function(error) {
+        console.error('读取PDF失败:', error);
         if (isPreviewingPdf) {
-            console.error('读取PDF文件失败');
-            pdfPreview.innerHTML = `<p class="empty-state">Conversion failed, please try again</p>`;
-            // 显示错误信息并隐藏进度条
-            const progressFill = document.getElementById('pdfLoadProgressFill');
-            const progressText = document.getElementById('pdfLoadProgressText');
-            const progressContainer = document.getElementById('pdfLoadProgressContainer');
-            
-            progressFill.style.width = '100%';
+            pdfPreview.innerHTML = `<p class="empty-state">Conversion failed</p>`;
             progressText.textContent = 'Read failed';
-            setTimeout(() => {
-                progressContainer.style.display = 'none';
-                progressFill.style.width = '0%';
-                progressText.textContent = '';
-            }, 1000);
         }
-        
-        // 重置预览状态
-        isPreviewingPdf = false;
-        currentLoadingTask = null;
-        
-        // 禁用暂停预览按钮
-        const pausePreviewBtn = document.getElementById('pausePreview');
-        pausePreviewBtn.disabled = true;
     };
     
+    // 开始读取文件
     reader.readAsArrayBuffer(file);
 }
 
-// 暂停PDF预览
+// 暂停预览
 function pausePreview() {
-    // 设置预览状态为false
     isPreviewingPdf = false;
+    
+    // 禁用暂停预览按钮
+    const pausePreviewBtn = document.getElementById('pausePreview');
+    pausePreviewBtn.disabled = true;
     
     // 取消当前加载任务
     if (currentLoadingTask) {
-        try {
-            currentLoadingTask.destroy();
-        } catch (error) {
-            console.error('取消PDF加载任务失败:', error);
-        }
+        currentLoadingTask.destroy();
         currentLoadingTask = null;
     }
     
-    // 获取元素
+    // 更新预览区域
     const pdfPreview = document.getElementById('pdfPreview');
-    const progressContainer = document.getElementById('pdfLoadProgressContainer');
-    const pausePreviewBtn = document.getElementById('pausePreview');
-    
-    // 显示提示信息
-        pdfPreview.innerHTML = `<h4>Preview paused</h4><p>You can click the "Convert to Images" button directly to convert images</p>`;
+    pdfPreview.innerHTML = `<p class="empty-state">Preview paused</p><p>You can click the "Convert to Images" button directly to convert images</p>`;
     
     // 隐藏进度条
+    const progressContainer = document.getElementById('pdfLoadProgressContainer');
     progressContainer.style.display = 'none';
-    
-    // 禁用暂停预览按钮
-    pausePreviewBtn.disabled = true;
 }
 
-// 将PDF转换为图片
+// PDF转图片
 async function convertPdfToImages() {
     if (!currentPdf) {
         alert('Please upload PDF first');
@@ -795,94 +740,22 @@ async function convertPdfToImages() {
     convertBtn.textContent = 'Converting...';
     
     // 获取进度条元素
-    const progressContainer = document.getElementById('pdfProgressContainer');
-    const progressFill = document.getElementById('pdfProgressFill');
-    const progressText = document.getElementById('pdfProgressText');
+    const progressContainer = document.getElementById('pdfLoadProgressContainer');
+    const progressFill = document.getElementById('pdfLoadProgressFill');
+    const progressText = document.getElementById('pdfLoadProgressText');
+    
+    // 获取设置
+    const dpi = parseInt(document.getElementById('dpi').value) || 300;
+    const imageFormat = document.getElementById('imageFormat').value || 'png';
     
     try {
-        // 获取设置
-        const dpi = parseInt(document.getElementById('dpi').value);
-        const imageFormat = document.getElementById('imageFormat').value;
-        
-        // 读取PDF文件
-        const arrayBuffer = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result);
-            reader.onerror = reject;
-            reader.readAsArrayBuffer(currentPdf);
-        });
-        
-        // 使用pdf.js加载PDF
-        const loadingTask = pdfjsLib.getDocument(arrayBuffer);
-        const pdf = await loadingTask.promise;
-        const numPages = pdf.numPages;
-        
-        // 显示进度条
-        progressContainer.style.display = 'block';
-        
-        // 生成所有页面的图片
-        const images = [];
-        for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-            // 更新进度
-            const progressPercentage = Math.round((pageNum / numPages) * 100);
-            convertBtn.textContent = `转换中... ${pageNum}/${numPages}`;
-            
-            // 更新进度条
-            progressFill.style.width = `${progressPercentage}%`;
-            progressText.textContent = `${progressPercentage}% (${pageNum}/${numPages})`;
-            
-            const page = await pdf.getPage(pageNum);
-            const viewport = page.getViewport({ scale: dpi / 96 });
-            
-            const canvas = document.createElement('canvas');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            
-            const ctx = canvas.getContext('2d');
-            await page.render({ canvasContext: ctx, viewport }).promise;
-            
-            // 将canvas转换为Blob
-            const blob = await new Promise((resolve) => {
-                canvas.toBlob(resolve, `image/${imageFormat}`, 0.9);
-            });
-            
-            images.push(blob);
-        }
-        
-        // 生成文件名（不含扩展名）
-        const baseFileName = currentPdf.name.replace(/\.[^/.]+$/, '');
-        
-        // 计算页码数字的长度，用于动态补零
-        const pageNumLength = numPages.toString().length;
-        
-        // 生成文件名的辅助函数
-        const getFileName = (index) => {
-            const pageNum = index + 1;
-            // 只有1页时，直接使用原文件名，不添加页码
-            if (numPages === 1) {
-                return `${baseFileName}.${imageFormat}`;
-            }
-            // numPages为2时不补零，否则根据总页数的数字长度补零
-            const paddedPageNum = numPages <= 2 ? pageNum.toString() : pageNum.toString().padStart(pageNumLength, '0');
-            return `${baseFileName}-${paddedPageNum}.${imageFormat}`;
-        };
-        
-        if (numPages <= 2) {
-            // 直接下载
-            for (let i = 0; i < images.length; i++) {
-                const fileName = getFileName(i);
-                saveAs(images[i], fileName);
-            }
+        // 如果已经有预览的页面，直接使用
+        if (pdfPages.length > 0 && isPreviewingPdf) {
+            // 直接转换预览的页面
+            await convertPreviewedPages(dpi, imageFormat, convertBtn, progressContainer, progressFill, progressText);
         } else {
-            // 打包成ZIP下载
-            const zip = new JSZip();
-            for (let i = 0; i < images.length; i++) {
-                const fileName = getFileName(i);
-                zip.file(fileName, images[i]);
-            }
-            
-            const zipBlob = await zip.generateAsync({ type: 'blob' });
-            saveAs(zipBlob, `${baseFileName}.zip`);
+            // 没有预览或预览已暂停，直接转换PDF文件
+            await convertPdfFile(dpi, imageFormat, convertBtn, progressContainer, progressFill, progressText);
         }
         
     } catch (error) {
@@ -892,12 +765,37 @@ async function convertPdfToImages() {
         // 恢复按钮状态
         convertBtn.disabled = false;
         convertBtn.textContent = originalText;
-
+        
         // 隐藏进度条
         progressContainer.style.display = 'none';
         progressFill.style.width = '0%';
         progressText.textContent = '';
     }
+}
+
+// 转换已预览的页面
+async function convertPreviewedPages(dpi, imageFormat, convertBtn, progressContainer, progressFill, progressText) {
+    const totalPages = pdfPages.length;
+    
+    // 显示进度条
+    progressContainer.style.display = 'block';
+    progressFill.style.width = '0%';
+    progressText.textContent = 'Converting...';
+    
+    // 转换每一页
+    for (let i = 0; i < totalPages; i++) {
+        const page = pdfPages[i];
+        
+        // 更新进度
+        const progressPercentage = Math.round(((i + 1) / totalPages) * 100);
+        progressFill.style.width = `${progressPercentage}%`;
+        
+        // 转换并下载图片
+        await convertAndDownloadImage(page.canvas, page.pageNum, imageFormat, dpi);
+    }
+    
+    // 转换完成
+    progressText.textContent = 'Completed';
 }
 
 // 语言切换功能
@@ -927,3 +825,95 @@ function changeLanguage(languageCode) {
     window.location.href = newPath;
 }
 
+// 直接转换PDF文件
+async function convertPdfFile(dpi, imageFormat, convertBtn, progressContainer, progressFill, progressText) {
+    const reader = new FileReader();
+    
+    // 显示进度条
+    progressContainer.style.display = 'block';
+    progressFill.style.width = '0%';
+    progressText.textContent = 'Preparing...';
+    
+    return new Promise((resolve, reject) => {
+        reader.onload = async function(e) {
+            try {
+                // 加载PDF文档
+                const pdfDoc = await pdfjsLib.getDocument({
+                    data: e.target.result,
+                    verbosity: 0
+                }).promise;
+                
+                // 获取PDF总页数
+                const totalPages = pdfDoc.numPages;
+                
+                // 转换每一页
+                for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+                    // 更新进度
+                    const progressPercentage = Math.round(((pageNum - 1) / totalPages) * 100);
+                    progressFill.style.width = `${progressPercentage}%`;
+                    progressText.textContent = `Converting ${pageNum}/${totalPages}`;
+                    
+                    // 获取当前页
+                    const page = await pdfDoc.getPage(pageNum);
+                    
+                    // 设置渲染参数
+                    const scale = dpi / 72; // PDF默认72DPI
+                    const viewport = page.getViewport({ scale: scale });
+                    
+                    // 创建Canvas元素
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    
+                    // 渲染页面
+                    const renderContext = {
+                        canvasContext: ctx,
+                        viewport: viewport
+                    };
+                    
+                    await page.render(renderContext).promise;
+                    
+                    // 转换并下载图片
+                    await convertAndDownloadImage(canvas, pageNum, imageFormat, dpi);
+                }
+                
+                // 转换完成
+                progressText.textContent = 'Completed';
+                
+                resolve();
+                
+            } catch (error) {
+                console.error('直接转换PDF失败:', error);
+                reject(error);
+            }
+        };
+        
+        reader.onerror = function(error) {
+            console.error('读取PDF失败:', error);
+            progressText.textContent = 'Read failed';
+            reject(error);
+        };
+        
+        // 开始读取文件
+        reader.readAsArrayBuffer(currentPdf);
+    });
+}
+
+// 转换并下载图片
+async function convertAndDownloadImage(canvas, pageNum, imageFormat, dpi) {
+    return new Promise((resolve) => {
+        // 根据选择的格式转换图片
+        const mimeType = imageFormat === 'jpg' ? 'image/jpeg' : 'image/png';
+        
+        // 获取文件名
+        const pdfFileName = currentPdf.name.replace(/\.pdf$/i, '');
+        
+        // 转换为Blob对象
+        canvas.toBlob((blob) => {
+            // 下载图片
+            saveAs(blob, `${pdfFileName}_page${pageNum}.${imageFormat}`);
+            resolve();
+        }, mimeType, 0.9);
+    });
+}

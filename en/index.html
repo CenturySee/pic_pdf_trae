@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="home.title">Image PDF Converter - Home</title>
+    <title>Image PDF Converter - Home</title>
     <link rel="icon" href="../favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../style.css">
@@ -83,39 +83,33 @@
 <body>
     <!-- Language switcher -->
     <div class="language-switcher">
-        <button class="lang-switch-btn" onclick="changeLanguage('zh')" data-i18n="languages.zh">中文</button>
-        <button class="lang-switch-btn active" onclick="changeLanguage('en')" data-i18n="languages.en">English</button>
-        <button class="lang-switch-btn" onclick="changeLanguage('ja')" data-i18n="languages.ja">日本語</button>
+        <button class="lang-switch-btn" onclick="changeLanguage('zh')">中文</button>
+        <button class="lang-switch-btn active" onclick="changeLanguage('en')">English</button>
+        <button class="lang-switch-btn" onclick="changeLanguage('ja')">日本語</button>
     </div>
 
     <div class="home-container">
         <div class="home-header">
-            <h1 class="home-title" data-i18n="home.main_title">Image PDF Converter</h1>
-            <p class="home-subtitle" data-i18n="home.subtitle">Fast, Secure, Free Online Conversion Service</p>
+            <h1 class="home-title">Image PDF Converter</h1>
+            <p class="home-subtitle">Fast, Secure, Free Online Conversion Service</p>
         </div>
         
         <div class="navigation-grid">
             <a href="pic2pdf/" class="nav-card">
                 <span class="nav-icon">🖼️→📄</span>
-                <h3 data-i18n="home.pic2pdf_title">Image to PDF</h3>
-                <p data-i18n="home.pic2pdf_desc">Merge multiple images into a single PDF file</p>
+                <h3>Image to PDF</h3>
+                <p>Merge multiple images into a single PDF file</p>
             </a>
             
             <a href="pdf2pic/" class="nav-card">
                 <span class="nav-icon">📄→🖼️</span>
-                <h3 data-i18n="home.pdf2pic_title">PDF to Image</h3>
-                <p data-i18n="home.pdf2pic_desc">Convert PDF files to high-quality images</p>
+                <h3>PDF to Image</h3>
+                <p>Convert PDF files to high-quality images</p>
             </a>
         </div>
     </div>
-
-    <!-- Import internationalization script -->
-    <script src="/i18n.js"></script>
-    <script>
-        // Initialize internationalization
-        document.addEventListener('DOMContentLoaded', async () => {
-            await i18n.init('en');
-        });
-    </script>
+    
+    <!-- JavaScript -->
+    <script src="script.js"></script>
 </body>
 </html>
