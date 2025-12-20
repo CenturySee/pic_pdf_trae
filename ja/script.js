@@ -597,13 +597,26 @@ function previewPdf(file) {
             currentLoadingTask = loadingTask;
             
             // 监听加载进度
+            let previousProgress = 0;
+            let isFirstProgressUpdate = true;
             loadingTask.onProgress = function(progressData) {
                 if (!isPreviewingPdf) return;
                 
-                // 更新进度条
-                const progressPercentage = Math.round(progressData.loaded / progressData.total * 100);
-                progressFill.style.width = `${progressPercentage}%`;
-                progressText.textContent = `読み込み中 ${progressPercentage}%`;
+                // 计算进度百分比
+                let progressPercentage = Math.round(progressData.loaded / progressData.total * 100);
+                
+                // 第一次更新时，确保进度不超过5%，避免初始跳变
+                if (isFirstProgressUpdate) {
+                    progressPercentage = Math.min(progressPercentage, 5);
+                    isFirstProgressUpdate = false;
+                }
+                
+                // 只允许进度增加，不允许快速跳变
+                if (progressPercentage > previousProgress) {
+                    progressFill.style.width = `${progressPercentage}%`;
+                    progressText.textContent = `読み込み中 ${progressPercentage}%`;
+                    previousProgress = progressPercentage;
+                }
             };
             
             // 加载PDF文档
@@ -614,7 +627,8 @@ function previewPdf(file) {
             // 获取PDF总页数
             const totalPages = pdfDoc.numPages;
             
-            // 更新进度状态
+            // 重置进度条，准备开始渲染
+            progressFill.style.width = '0%';
             progressText.textContent = 'ページをレンダリング中...';
             
             // 清空预览区域
@@ -622,6 +636,7 @@ function previewPdf(file) {
             
             // 渲染每一页
             let renderProgress = 0;
+            let previousRenderProgress = 0;
             
             for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
                 if (!isPreviewingPdf) break;
@@ -659,6 +674,14 @@ function previewPdf(file) {
                     
                     // 更新进度
                     renderProgress++;
+                    const renderPercentage = Math.round((renderProgress / totalPages) * 100);
+                    
+                    // 只允许进度增加，确保平滑增长
+                    if (renderPercentage > previousRenderProgress) {
+                        progressFill.style.width = `${renderPercentage}%`;
+                        previousRenderProgress = renderPercentage;
+                    }
+                    
                     progressText.textContent = `レンダリング中 ${renderProgress}/${totalPages}`;
                     
                     // 将页面数据添加到pdfPages数组
@@ -782,20 +805,73 @@ async function convertPreviewedPages(dpi, imageFormat, convertBtn, progressConta
     progressFill.style.width = '0%';
     progressText.textContent = '変換中...';
     
-    // 转换每一页
-    for (let i = 0; i < totalPages; i++) {
-        const page = pdfPages[i];
+    // 当页数大于2时，使用zip打包
+    if (totalPages > 2) {
+        const zip = new JSZip();
+        // 使用PDF文件名作为文件夹名
+        const pdfFileName = currentPdf.name.replace(/\.pdf$/i, '');
+        const imagesFolder = zip.folder(pdfFileName);
         
-        // 更新进度
-        const progressPercentage = Math.round(((i + 1) / totalPages) * 100);
-        progressFill.style.width = `${progressPercentage}%`;
+        // 转换每一页并添加到zip
+        for (let i = 0; i < totalPages; i++) {
+            const page = pdfPages[i];
+            
+            // 更新进度
+            const progressPercentage = Math.round(((i + 1) / totalPages) * 100);
+            progressFill.style.width = `${progressPercentage}%`;
+            progressText.textContent = `変換中 ${i + 1}/${totalPages}`;
+            
+            // 转换图片
+            await new Promise((resolve) => {
+                const mimeType = imageFormat === 'jpg' ? 'image/jpeg' : 'image/png';
+                
+                // 格式化页码
+                let formattedPageNum;
+                if (totalPages > 100) {
+                    formattedPageNum = page.pageNum.toString().padStart(3, '0');
+                } else if (totalPages > 10) {
+                    formattedPageNum = page.pageNum.toString().padStart(2, '0');
+                } else {
+                    formattedPageNum = page.pageNum.toString();
+                }
+                
+                // 获取文件名，不需要添加page关键字
+                const fileName = `${pdfFileName}_${formattedPageNum}.${imageFormat}`;
         
-        // 转换并下载图片
-        await convertAndDownloadImage(page.canvas, page.pageNum, imageFormat, dpi);
+                // 转换为Blob对象并添加到zip
+                page.canvas.toBlob((blob) => {
+                    imagesFolder.file(fileName, blob);
+                    resolve();
+                }, mimeType, 0.9);
+            });
+        }
+        
+        // 生成zip文件并下载
+        progressText.textContent = 'パッケージング中...';
+        
+        // 使用之前声明的pdfFileName变量，zip文件名与PDF文件名相同
+        const zipFileName = `${pdfFileName}.zip`;
+        
+        zip.generateAsync({ type: 'blob' }).then((content) => {
+            saveAs(content, zipFileName);
+            progressText.textContent = '完了';
+        });
+    } else {
+        // 页数小于等于2时，单独下载
+        for (let i = 0; i < totalPages; i++) {
+            const page = pdfPages[i];
+            
+            // 更新进度
+            const progressPercentage = Math.round(((i + 1) / totalPages) * 100);
+            progressFill.style.width = `${progressPercentage}%`;
+            
+            // 转换并下载图片
+            await convertAndDownloadImage(page.canvas, page.pageNum, imageFormat, dpi, totalPages);
+        }
+        
+        // 转换完成
+        progressText.textContent = '完了';
     }
-    
-    // 转换完成
-    progressText.textContent = '完了';
 }
 
 // 语言切换功能
@@ -846,42 +922,114 @@ async function convertPdfFile(dpi, imageFormat, convertBtn, progressContainer, p
                 // 获取PDF总页数
                 const totalPages = pdfDoc.numPages;
                 
-                // 转换每一页
-                for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-                    // 更新进度
-                    const progressPercentage = Math.round(((pageNum - 1) / totalPages) * 100);
-                    progressFill.style.width = `${progressPercentage}%`;
-                    progressText.textContent = `変換中 ${pageNum}/${totalPages}`;
+                // 当页数大于2时，使用zip打包
+                if (totalPages > 2) {
+                    const zip = new JSZip();
+                    // 使用PDF文件名作为文件夹名
+                    const pdfFileName = currentPdf.name.replace(/\.pdf$/i, '');
+                    const imagesFolder = zip.folder(pdfFileName);
                     
-                    // 获取当前页
-                    const page = await pdfDoc.getPage(pageNum);
+                    // 转换每一页并添加到zip
+                    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+                        // 更新进度
+                        const progressPercentage = Math.round(((pageNum - 1) / totalPages) * 100);
+                        progressFill.style.width = `${progressPercentage}%`;
+                        progressText.textContent = `変換中 ${pageNum}/${totalPages}`;
+                        
+                        // 获取当前页
+                        const page = await pdfDoc.getPage(pageNum);
+                        
+                        // 设置渲染参数
+                        const scale = dpi / 72; // PDF默认72DPI
+                        const viewport = page.getViewport({ scale: scale });
+                        
+                        // 创建Canvas元素
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        
+                        // 渲染页面
+                        const renderContext = {
+                            canvasContext: ctx,
+                            viewport: viewport
+                        };
+                        
+                        await page.render(renderContext).promise;
+                        
+                        // 转换图片并添加到zip
+                        await new Promise((resolveImage) => {
+                            const mimeType = imageFormat === 'jpg' ? 'image/jpeg' : 'image/png';
+                            
+                            // 格式化页码
+                            let formattedPageNum;
+                            if (totalPages > 100) {
+                                formattedPageNum = pageNum.toString().padStart(3, '0');
+                            } else if (totalPages > 10) {
+                                formattedPageNum = pageNum.toString().padStart(2, '0');
+                            } else {
+                                formattedPageNum = pageNum.toString();
+                            }
+                            
+                            // 获取文件名，不需要添加page关键字
+                            const fileName = `${pdfFileName}_${formattedPageNum}.${imageFormat}`;
+                            
+                            // 转换为Blob对象并添加到zip
+                            canvas.toBlob((blob) => {
+                                imagesFolder.file(fileName, blob);
+                                resolveImage();
+                            }, mimeType, 0.9);
+                        });
+                    }
                     
-                    // 设置渲染参数
-                    const scale = dpi / 72; // PDF默认72DPI
-                    const viewport = page.getViewport({ scale: scale });
+                    // 生成zip文件并下载
+                    progressText.textContent = 'パッケージング中...';
                     
-                    // 创建Canvas元素
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = viewport.width;
-                    canvas.height = viewport.height;
+                    // 使用之前声明的pdfFileName变量，zip文件名与PDF文件名相同
+                    const zipFileName = `${pdfFileName}.zip`;
                     
-                    // 渲染页面
-                    const renderContext = {
-                        canvasContext: ctx,
-                        viewport: viewport
-                    };
+                    zip.generateAsync({ type: 'blob' }).then((content) => {
+                        saveAs(content, zipFileName);
+                        progressText.textContent = '完了';
+                        resolve();
+                    });
+                } else {
+                    // 页数小于等于2时，单独下载
+                    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+                        // 更新进度
+                        const progressPercentage = Math.round(((pageNum - 1) / totalPages) * 100);
+                        progressFill.style.width = `${progressPercentage}%`;
+                        progressText.textContent = `変換中 ${pageNum}/${totalPages}`;
+                        
+                        // 获取当前页
+                        const page = await pdfDoc.getPage(pageNum);
+                        
+                        // 设置渲染参数
+                        const scale = dpi / 72; // PDF默认72DPI
+                        const viewport = page.getViewport({ scale: scale });
+                        
+                        // 创建Canvas元素
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        
+                        // 渲染页面
+                        const renderContext = {
+                            canvasContext: ctx,
+                            viewport: viewport
+                        };
+                        
+                        await page.render(renderContext).promise;
+                        
+                        // 转换并下载图片
+                        await convertAndDownloadImage(canvas, pageNum, imageFormat, dpi, totalPages);
+                    }
                     
-                    await page.render(renderContext).promise;
-                    
-                    // 转换并下载图片
-                    await convertAndDownloadImage(canvas, pageNum, imageFormat, dpi);
+                    // 转换完成
+                    progressText.textContent = '完了';
+                    resolve();
                 }
-                
-                // 转换完成
-                progressText.textContent = '完了';
-                
-                resolve();
                 
             } catch (error) {
                 console.error('直接转换PDF失败:', error);
@@ -901,7 +1049,7 @@ async function convertPdfFile(dpi, imageFormat, convertBtn, progressContainer, p
 }
 
 // 转换并下载图片
-async function convertAndDownloadImage(canvas, pageNum, imageFormat, dpi) {
+async function convertAndDownloadImage(canvas, pageNum, imageFormat, dpi, totalPages = 1) {
     return new Promise((resolve) => {
         // 根据选择的格式转换图片
         const mimeType = imageFormat === 'jpg' ? 'image/jpeg' : 'image/png';
@@ -909,10 +1057,23 @@ async function convertAndDownloadImage(canvas, pageNum, imageFormat, dpi) {
         // 获取文件名
         const pdfFileName = currentPdf.name.replace(/\.pdf$/i, '');
         
+        // 格式化页码
+        let formattedPageNum;
+        if (totalPages > 100) {
+            // 三位数字格式：001, 002, ..., 010, ..., 100, ...
+            formattedPageNum = pageNum.toString().padStart(3, '0');
+        } else if (totalPages > 10) {
+            // 两位数字格式：01, 02, ..., 10, ...
+            formattedPageNum = pageNum.toString().padStart(2, '0');
+        } else {
+            // 一位数字格式：1, 2, ..., 10
+            formattedPageNum = pageNum.toString();
+        }
+        
         // 转换为Blob对象
         canvas.toBlob((blob) => {
-            // 下载图片
-            saveAs(blob, `${pdfFileName}_page${pageNum}.${imageFormat}`);
+            // 下载图片，不需要添加page关键字
+            saveAs(blob, `${pdfFileName}_${formattedPageNum}.${imageFormat}`);
             resolve();
         }, mimeType, 0.9);
     });
