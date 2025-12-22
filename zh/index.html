@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>图片PDF转换工具 - 首页</title>
+    <title>PDF工具集 - 首页</title>
     <link rel="icon" href="../favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../style.css">
@@ -64,6 +64,50 @@
             font-size: 4rem;
             margin-bottom: 1.5rem;
             display: block;
+            height: 4rem;
+            line-height: 4rem;
+            text-align: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        
+        /* 确保所有图标视觉大小一致 */
+        .nav-card:nth-child(3) .nav-icon {
+            font-size: 3.2rem; /* PDF合并图标稍微调小 */
+            letter-spacing: -0.1rem; /* 减少字符间距 */
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-icon {
+                font-size: 3.5rem;
+                height: 3.5rem;
+                line-height: 3.5rem;
+            }
+            .nav-card:nth-child(3) .nav-icon {
+                font-size: 2.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .nav-icon {
+                font-size: 3rem;
+                height: 3rem;
+                line-height: 3rem;
+            }
+            .nav-card:nth-child(3) .nav-icon {
+                font-size: 2.4rem;
+            }
+        }
+        
+        @media (max-width: 320px) {
+            .nav-icon {
+                font-size: 2.5rem;
+                height: 2.5rem;
+                line-height: 2.5rem;
+            }
+            .nav-card:nth-child(3) .nav-icon {
+                font-size: 2rem;
+            }
         }
         
         .nav-card h3 {
@@ -90,8 +134,8 @@
 
     <div class="home-container">
         <div class="home-header">
-            <h1 class="home-title">图片PDF转换工具</h1>
-            <p class="home-subtitle">快速、安全、免费的在线转换服务</p>
+            <h1 class="home-title">PDF工具集</h1>
+            <p class="home-subtitle">快速、安全、免费的PDF处理工具</p>
         </div>
         
         <div class="navigation-grid">
@@ -105,6 +149,12 @@
                 <span class="nav-icon">📄→🖼️</span>
                 <h3>PDF转图片</h3>
                 <p>将PDF文件转换为高质量图片</p>
+            </a>
+            
+            <a href="pdfmerge/" class="nav-card">
+                <span class="nav-icon">📄+📄=📄</span>
+                <h3>PDF合并</h3>
+                <p>将多个PDF文件合并为单个PDF文件</p>
             </a>
         </div>
     </div>

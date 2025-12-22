@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>画像PDFコンバーター - ホーム</title>
+    <title>PDFツールセット - ホーム</title>
     <link rel="icon" href="../favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../style.css">
@@ -64,6 +64,50 @@
             font-size: 4rem;
             margin-bottom: 1.5rem;
             display: block;
+            height: 4rem;
+            line-height: 4rem;
+            text-align: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        
+        /* 确保所有图标视觉大小一致 */
+        .nav-card:nth-child(3) .nav-icon {
+            font-size: 3.2rem; /* PDF合并图标稍微调小 */
+            letter-spacing: -0.1rem; /* 减少字符间距 */
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-icon {
+                font-size: 3.5rem;
+                height: 3.5rem;
+                line-height: 3.5rem;
+            }
+            .nav-card:nth-child(3) .nav-icon {
+                font-size: 2.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .nav-icon {
+                font-size: 3rem;
+                height: 3rem;
+                line-height: 3rem;
+            }
+            .nav-card:nth-child(3) .nav-icon {
+                font-size: 2.4rem;
+            }
+        }
+        
+        @media (max-width: 320px) {
+            .nav-icon {
+                font-size: 2.5rem;
+                height: 2.5rem;
+                line-height: 2.5rem;
+            }
+            .nav-card:nth-child(3) .nav-icon {
+                font-size: 2rem;
+            }
         }
         
         .nav-card h3 {
@@ -90,8 +134,8 @@
 
     <div class="home-container">
         <div class="home-header">
-            <h1 class="home-title">画像PDFコンバーター</h1>
-            <p class="home-subtitle">高速、安全、無料のオンライン変換サービス</p>
+            <h1 class="home-title">PDFツールセット</h1>
+            <p class="home-subtitle">高速、安全、無料のPDF処理ツール</p>
         </div>
         
         <div class="navigation-grid">
@@ -105,6 +149,12 @@
                 <span class="nav-icon">📄→🖼️</span>
                 <h3>PDFから画像へ</h3>
                 <p>PDFファイルを高品質の画像に変換</p>
+            </a>
+            
+            <a href="pdfmerge/" class="nav-card">
+                <span class="nav-icon">📄+📄=📄</span>
+                <h3>PDF結合</h3>
+                <p>複数のPDFファイルを1つのPDFファイルに結合</p>
             </a>
         </div>
     </div>

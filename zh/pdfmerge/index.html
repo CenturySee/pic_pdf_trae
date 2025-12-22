@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF文件合并工具</title>
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../../style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+</head>
+<body>
+    <!-- 语言切换按钮 -->
+    <div class="language-switcher">
+        <button class="lang-switch-btn active" onclick="changeLanguage('zh')">中文</button>
+        <button class="lang-switch-btn" onclick="changeLanguage('en')">English</button>
+        <button class="lang-switch-btn" onclick="changeLanguage('ja')">日本語</button>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h1>PDF工具</h1>
+            <nav>
+                <a href="../pic2pdf/" class="nav-btn">图片转PDF</a>
+                <a href="../pdf2pic/" class="nav-btn">PDF转图片</a>
+                <button class="nav-btn active" data-tab="pdf-merge">PDF合并</button>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <!-- PDF合并 -->
+            <section id="pdf-merge" class="tab-content active">
+                <div class="section-header">
+                    <h2>PDF文件合并</h2>
+                </div>
+                
+                <!-- 上传区域 -->
+                <div class="upload-section">
+                    <div class="upload-area" id="uploadArea">
+                        <input type="file" id="fileInput" accept=".pdf" multiple style="display: none;">
+                        <button id="uploadBtn" class="primary-btn">选择PDF文件</button>
+                        <p>或拖拽PDF文件到此处</p>
+                        <div class="upload-info">
+                            <small>支持多个PDF文件，加密文件将在合并时自动跳过</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 控制区域 -->
+                <div class="controls-section">
+                    <div class="controls-group">
+                        <div class="control-item">
+                            <label>输出文件名:</label>
+                            <input type="text" id="outputFilename" value="merged.pdf" placeholder="输入合并后的文件名">
+                        </div>
+                        <div class="control-item">
+                            <button class="secondary-btn" onclick="sortByName()">按名称排序</button>
+                            <button class="secondary-btn" onclick="sortByTime()">按时间排序</button>
+                        </div>
+                        <button id="mergeBtn" class="primary-btn" disabled>合并PDF文件</button>
+                    </div>
+                </div>
+
+                <!-- 进度条 -->
+                <div class="progress-container" id="progressContainer" style="display: none;">
+                    <div class="progress-bar" id="progressBar">
+                        <div class="progress-fill" id="progressFill"></div>
+                        <div class="progress-text" id="progressText">0%</div>
+                    </div>
+                </div>
+
+                <!-- 状态信息 -->
+                <div id="status" class="status-message" style="display: none;"></div>
+
+                <!-- 文件列表 -->
+                <div class="preview-section">
+                    <div class="preview-header">
+                        <h3>PDF文件列表</h3>
+                        <span id="fileCount" class="file-count">0 个文件</span>
+                    </div>
+                    <div id="fileList" class="file-list">
+                        <div class="empty-state">
+                            <div class="empty-icon">📄</div>
+                            <p>暂无PDF文件，请上传文件</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        let uploadedFiles = [];
+        let fileIdCounter = 0;
+
+        // DOM元素
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const mergeBtn = document.getElementById('mergeBtn');
+        const fileList = document.getElementById('fileList');
+        const fileCount = document.getElementById('fileCount');
+        const outputFilename = document.getElementById('outputFilename');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const status = document.getElementById('status');
+
+        // 初始化事件监听器
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // 上传按钮点击
+            uploadBtn.addEventListener('click', () => fileInput.click());
+            
+            // 文件选择
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // 拖拽上传
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('dragleave', handleDragLeave);
+            uploadArea.addEventListener('drop', handleDrop);
+            
+            // 合并按钮
+            mergeBtn.addEventListener('click', mergePDFs);
+        }
+
+        // 语言切换
+        function changeLanguage(lang) {
+            // 更新语言按钮状态
+            document.querySelectorAll('.lang-switch-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 获取当前路径
+            const path = window.location.pathname;
+            
+            // 构建新的语言路径
+            let newPath;
+            if (path.includes('/en/')) {
+                newPath = path.replace('/en/', `/${lang}/`);
+            } else if (path.includes('/zh/')) {
+                newPath = path.replace('/zh/', `/${lang}/`);
+            } else if (path.includes('/ja/')) {
+                newPath = path.replace('/ja/', `/${lang}/`);
+            } else {
+                // 如果当前不在语言目录中，直接添加语言目录
+                newPath = `/${lang}/`;
+            }
+            
+            // 重定向到新路径
+            window.location.href = newPath;
+        }
+
+        // 文件选择处理
+        async function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            await processFiles(files);
+        }
+
+        // 拖拽处理
+        function handleDragOver(event) {
+            event.preventDefault();
+            uploadArea.classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            uploadArea.classList.remove('dragover');
+        }
+
+        async function handleDrop(event) {
+            event.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = Array.from(event.dataTransfer.files);
+            await processFiles(files);
+        }
+
+        // 处理文件上传
+        async function processFiles(files) {
+            const pdfFiles = files.filter(file => file.type === 'application/pdf');
+            
+            if (pdfFiles.length === 0) {
+                showStatus('请选择PDF文件', 'error');
+                return;
+            }
+
+            showStatus('正在检测PDF文件...', 'info');
+            
+            // 检测每个PDF文件的加密状态
+            for (const file of pdfFiles) {
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    let isEncrypted = false;
+                    
+                    try {
+                        // 尝试正常加载PDF
+                        await PDFLib.PDFDocument.load(arrayBuffer);
+                    } catch (error) {
+                        // 如果加载失败，检查是否是加密错误
+                        if (error.message.includes('encrypted')) {
+                            isEncrypted = true;
+                        } else {
+                            isEncrypted = true;
+                        }
+                    }
+
+                    const fileObj = {
+                        id: fileIdCounter++,
+                        file: file,
+                        name: file.name,
+                        size: file.size,
+                        uploadTime: new Date(),
+                        isEncrypted: isEncrypted
+                    };
+                    uploadedFiles.push(fileObj);
+                    
+                } catch (error) {
+                    console.error('检测PDF文件时出错:', error);
+                    const fileObj = {
+                        id: fileIdCounter++,
+                        file: file,
+                        name: file.name,
+                        size: file.size,
+                        uploadTime: new Date(),
+                        isEncrypted: true
+                    };
+                    uploadedFiles.push(fileObj);
+                }
+            }
+
+            updateFileList();
+            
+            const encryptedCount = uploadedFiles.filter(f => f.isEncrypted).length;
+            if (encryptedCount > 0) {
+                showStatus(`成功添加 ${pdfFiles.length} 个PDF文件，其中 ${encryptedCount} 个为加密文件`, 'info');
+            } else {
+                showStatus(`成功添加 ${pdfFiles.length} 个PDF文件`, 'success');
+            }
+        }
+
+        // 更新文件列表
+        function updateFileList() {
+            if (uploadedFiles.length === 0) {
+                fileList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📄</div>
+                        <p>暂无PDF文件，请上传文件</p>
+                    </div>
+                `;
+                fileCount.textContent = '0 个文件';
+                mergeBtn.disabled = true;
+                return;
+            }
+
+            fileCount.textContent = `${uploadedFiles.length} 个文件`;
+            mergeBtn.disabled = uploadedFiles.length < 2;
+
+            fileList.innerHTML = uploadedFiles.map((fileObj, index) => `
+                <div class="file-item" draggable="true" data-id="${fileObj.id}">
+                    <div class="file-info">
+                        <div class="file-name">${index + 1}. ${fileObj.name}</div>
+                        <div class="file-meta">
+                            <span class="file-size">${formatFileSize(fileObj.size)}</span>
+                            <span class="file-time">${formatDate(fileObj.uploadTime)}</span>
+                            <span class="status-badge ${fileObj.isEncrypted ? 'encrypted' : 'normal'}">
+                                ${fileObj.isEncrypted ? '🔒 加密' : '✅ 正常'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="remove-btn" onclick="removeFile(${fileObj.id})" title="删除文件">✕</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // 设置拖拽排序
+            setupDragAndDrop();
+        }
+
+        // 设置拖拽排序
+        function setupDragAndDrop() {
+            const fileItems = document.querySelectorAll('.file-item');
+            let draggedElement = null;
+
+            fileItems.forEach(item => {
+                item.addEventListener('dragstart', function(e) {
+                    draggedElement = this;
+                    this.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+
+                item.addEventListener('dragend', function() {
+                    this.classList.remove('dragging');
+                });
+
+                item.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                });
+
+                item.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    if (draggedElement !== this) {
+                        const draggedId = parseInt(draggedElement.dataset.id);
+                        const targetId = parseInt(this.dataset.id);
+                        
+                        const draggedIndex = uploadedFiles.findIndex(f => f.id === draggedId);
+                        const targetIndex = uploadedFiles.findIndex(f => f.id === targetId);
+                        
+                        // 重新排序数组
+                        const [draggedFile] = uploadedFiles.splice(draggedIndex, 1);
+                        uploadedFiles.splice(targetIndex, 0, draggedFile);
+                        
+                        updateFileList();
+                    }
+                });
+            });
+        }
+
+        // 删除文件
+        function removeFile(fileId) {
+            uploadedFiles = uploadedFiles.filter(file => file.id !== fileId);
+            updateFileList();
+            showStatus('文件已删除', 'info');
+        }
+
+        // 排序功能
+        function sortByName() {
+            uploadedFiles.sort((a, b) => a.name.localeCompare(b.name));
+            updateFileList();
+            showStatus('已按文件名排序', 'info');
+        }
+
+        function sortByTime() {
+            uploadedFiles.sort((a, b) => a.uploadTime - b.uploadTime);
+            updateFileList();
+            showStatus('已按上传时间排序', 'info');
+        }
+
+        // 合并PDF文件
+        async function mergePDFs() {
+            if (uploadedFiles.length < 2) {
+                showStatus('至少需要2个PDF文件才能合并', 'error');
+                return;
+            }
+
+            // 过滤掉加密的PDF文件
+            const normalFiles = uploadedFiles.filter(f => !f.isEncrypted);
+            const encryptedFiles = uploadedFiles.filter(f => f.isEncrypted);
+            
+            if (encryptedFiles.length > 0) {
+                showStatus(`检测到 ${encryptedFiles.length} 个加密PDF文件，将自动跳过这些文件`, 'info');
+                console.log('跳过的加密文件:', encryptedFiles.map(f => f.name));
+            }
+
+            if (normalFiles.length < 2) {
+                showStatus(`过滤后只有 ${normalFiles.length} 个正常PDF文件，至少需要2个文件才能合并`, 'error');
+                return;
+            }
+
+            const outputFileName = outputFilename.value.trim() || 'merged.pdf';
+            
+            mergeBtn.disabled = true;
+            progressContainer.style.display = 'block';
+            showStatus('正在合并PDF文件...', 'info');
+
+            try {
+                const mergedPdf = await PDFLib.PDFDocument.create();
+                const totalFiles = normalFiles.length;
+                let processedFiles = 0;
+                let failedFiles = [];
+
+                for (let i = 0; i < normalFiles.length; i++) {
+                    const fileObj = normalFiles[i];
+                    
+                    try {
+                        const arrayBuffer = await fileObj.file.arrayBuffer();
+                        const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
+                        
+                        const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                        pages.forEach(page => mergedPdf.addPage(page));
+                        processedFiles++;
+                        
+                    } catch (error) {
+                        console.error(`处理文件 ${fileObj.name} 时出错:`, error);
+                        failedFiles.push(fileObj.name);
+                    }
+                    
+                    // 更新进度条
+                    const progress = ((i + 1) / totalFiles) * 100;
+                    progressFill.style.width = progress + '%';
+                    progressText.textContent = Math.round(progress) + '%';
+                }
+
+                if (processedFiles === 0) {
+                    throw new Error('没有成功处理任何PDF文件');
+                }
+
+                const mergedPdfBytes = await mergedPdf.save();
+                
+                // 创建下载链接
+                const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = outputFileName.endsWith('.pdf') ? outputFileName : outputFileName + '.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                let successMessage = `PDF文件合并成功！已下载为 ${a.download}`;
+                if (encryptedFiles.length > 0) {
+                    successMessage += `\n跳过的加密文件: ${encryptedFiles.map(f => f.name).join(', ')}`;
+                }
+                if (failedFiles.length > 0) {
+                    successMessage += `\n处理失败的文件: ${failedFiles.join(', ')}`;
+                }
+                showStatus(successMessage, 'success');
+                
+            } catch (error) {
+                console.error('合并PDF时出错:', error);
+                showStatus(`合并PDF文件失败: ${error.message}`, 'error');
+            } finally {
+                mergeBtn.disabled = false;
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    progressFill.style.width = '0%';
+                    progressText.textContent = '0%';
+                }, 2000);
+            }
+        }
+
+        // 显示状态信息
+        function showStatus(message, type) {
+            status.textContent = message;
+            status.className = `status-message ${type}`;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 格式化日期
+        function formatDate(date) {
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+    </script>
+
+    <style>
+        /* PDF合并页面特定样式 */
+        .file-list {
+            min-height: 200px;
+        }
+
+        .file-item {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            transition: var(--transition);
+        }
+
+        .file-item:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .file-item.dragging {
+            opacity: 0.8;
+            transform: rotate(3deg) scale(1.05);
+            box-shadow: var(--shadow-lg);
+            z-index: 10;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .file-meta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .file-size {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .file-time {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+
+        .remove-btn:hover {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-badge.encrypted {
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #f59e0b;
+        }
+
+        .status-badge.normal {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .file-count {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-message {
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status-message.success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .status-message.error {
+            background-color: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #ef4444;
+        }
+
+        .status-message.info {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .upload-info {
+            margin-top: 0.5rem;
+        }
+
+        .upload-info small {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* 响应式设计调整 */
+        @media (max-width: 768px) {
+            .file-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .controls-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .control-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+    <script src="script.js"></script>
+</body>
+</html>
